@@ -6,7 +6,7 @@
 using System.Diagnostics.Contracts;
 using System.IO;
 
-namespace EasyPacketsLib.Internals;
+namespace EasyPacketsLib;
 
 /// <summary>
 ///     An easy solution for handled received easy packets and sending/receiving ModPackets with custom data.
