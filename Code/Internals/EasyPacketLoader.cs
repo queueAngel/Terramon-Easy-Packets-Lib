@@ -133,14 +133,6 @@ internal sealed class EasyPacketLoader : ModSystem
         // Register loaded mods; order must be the same for all users, so that net ids are synced
         foreach (var mod in ModLoader.Mods.Where(static m => m.Side is ModSide.Both).OrderBy(static m => m.Name, StringComparer.InvariantCulture))
         {
-#if RELEASE
-            // Ignore example packets
-            if (mod == Mod)
-            {
-                continue;
-            }
-#endif
-
             RegisterMod(mod);
         }
     }
