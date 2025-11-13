@@ -10,16 +10,17 @@ using Terraria.ID;
 namespace EasyPacketsLib.Internals;
 
 /// <summary>
-///     Generic wrapper for an <see cref="IEasyPacket{T}" /> type.
 ///     Used to receive an incoming packet and detour it to the struct.
 /// </summary>
-internal sealed class EasyPacket<T> : IEasyPacket where T : struct, IEasyPacket<T>
+internal static class EasyPacket
 {
     #region Methods
 
-    public void ReceivePacket(BinaryReader reader, in SenderInfo sender)
+    public static void ReceivePacket(in IEasyPacket packet, BinaryReader reader, in SenderInfo sender)
     {
-        var packet = default(T).Deserialise(reader, in sender);
+        var prev = reader.BaseStream.Position;
+
+        packet.Deserialise(reader, in sender);
 
         // Check if the packet should be automatically forwarded to clients
         if (Main.netMode == NetmodeID.Server && sender.Forwarded)
@@ -27,15 +28,17 @@ internal sealed class EasyPacket<T> : IEasyPacket where T : struct, IEasyPacket<
             EasyPacketExtensions.SendPacket_Internal(sender.Mod, in packet, sender.WhoAmI, sender.ToClient, sender.IgnoreClient, true);
         }
 
-        // Let any handlers handle the received packet
-        var handler = EasyPacketLoader.GetHandler<T>();
+        // Handle the received packet
         var handled = false;
-        handler?.Invoke(in packet, in sender, ref handled);
+        packet.Receive(in sender, ref handled);
 
         if (!handled)
         {
-            sender.Mod.Logger.Error($"Unhandled packet: {typeof(T).Name}.");
+            sender.Mod.Logger.Error($"Unhandled packet: {packet.GetType().Name}.");
         }
+
+        sender.Mod.Logger.Info($"Read {reader.BaseStream.Position - prev} bytes for packet of type {packet.GetType().Name}." +
+            $"{reader.BaseStream.Length - reader.BaseStream.Position} left");
     }
 
     #endregion

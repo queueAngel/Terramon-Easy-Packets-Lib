@@ -3,8 +3,8 @@
  *  DavidFDev
  */
 
-using System.IO;
 using EasyPacketsLib.Internals;
+using System.IO;
 using Terraria.ModLoader;
 
 namespace EasyPacketsLib;
@@ -26,13 +26,6 @@ public static class EasyPacketDLL
     /// <param name="mod">Mod to load the types from.</param>
     public static void RegisterMod(Mod mod)
     {
-        // Ensure this mod is using a DLL reference only
-        if (ModContent.GetInstance<EasyPacketsLibMod>() != null)
-        {
-            mod.Logger.Error("Failed to manually register easy packets for mod because it is not a DLL reference");
-            return;
-        }
-
         EasyPacketLoader.RegisterMod(mod);
     }
 
@@ -45,12 +38,6 @@ public static class EasyPacketDLL
     /// </summary>
     public static void Unload()
     {
-        // Ensure this mod is using a DLL reference only
-        if (ModContent.GetInstance<EasyPacketsLibMod>() != null)
-        {
-            return;
-        }
-
         EasyPacketLoader.ClearStatics();
     }
 
@@ -62,12 +49,6 @@ public static class EasyPacketDLL
     /// </summary>
     public static void HandlePacket(BinaryReader reader, int whoAmI)
     {
-        // Ensure this mod is using a DLL reference only
-        if (ModContent.GetInstance<EasyPacketsLibMod>() != null)
-        {
-            return;
-        }
-
         EasyPacketExtensions.HandlePacket_Internal(reader, whoAmI);
     }
 
