@@ -174,6 +174,11 @@ public static class EasyPacketExtensions
         var packet = EasyPacketLoader.GetPacket(packetNetId) ??
             throw new Exception($"HandlePacket received an invalid easy mod packet with Net ID: {packetNetId}. Could not find an easy mod packet with that Net ID.");
 
+        // DEBUG: Store the type of the currently handled packet
+#if DEBUG
+        EasyPacket.lastProcessedPacket = packet.GetType();
+#endif
+
         // Special case if the packet was forwarded
         byte toClient = 255;
         byte ignoreClient = 255;

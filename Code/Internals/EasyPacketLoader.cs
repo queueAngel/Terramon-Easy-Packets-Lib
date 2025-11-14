@@ -102,7 +102,7 @@ internal sealed class EasyPacketLoader : ModSystem
         PacketByNetId.Add(netId, instance);
         NetIdByPtr.Add(type.TypeHandle.Value, netId);
 
-        mod.Logger.Debug($"Registered IEasyPacket<{type.Name}> (Mod: {mod.Name}, ID: {netId})");
+        mod.Logger.Debug($"Registered {type.Name} (Mod: {mod.Name}, ID: {netId})");
     }
 
     #endregion

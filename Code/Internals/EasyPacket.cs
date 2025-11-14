@@ -3,9 +3,13 @@
  *  DavidFDev
  */
 
+using MonoMod.Cil;
+using System;
 using System.IO;
+using System.Reflection;
 using Terraria;
 using Terraria.ID;
+using Terraria.ModLoader;
 
 namespace EasyPacketsLib.Internals;
 
@@ -14,12 +18,30 @@ namespace EasyPacketsLib.Internals;
 /// </summary>
 internal static class EasyPacket
 {
+#if DEBUG
+    internal static Type lastProcessedPacket;
+    static EasyPacket()
+    {
+        var handlePacketMethod = typeof(ModNet).GetMethod("HandleModPacket", BindingFlags.Static | BindingFlags.NonPublic);
+        MonoModHooks.Modify(handlePacketMethod, static il =>
+        {
+            var c = new ILCursor(il);
+            c.GotoNext(MoveType.AfterLabel, i => i.MatchLdcI4(52));
+            c.EmitLdloc0();
+            c.EmitDelegate((short modNetID) =>
+            {
+                if (lastProcessedPacket != null)
+                    ModNet.GetMod(modNetID).Logger.Error($"Read underflow for packet of type {lastProcessedPacket.Name}");
+            });
+
+        });
+    }
+#endif
+
     #region Methods
 
     public static void ReceivePacket(in IEasyPacket packet, BinaryReader reader, in SenderInfo sender)
     {
-        var prev = reader.BaseStream.Position;
-
         packet.Deserialise(reader, in sender);
 
         // Check if the packet should be automatically forwarded to clients
@@ -36,9 +58,6 @@ internal static class EasyPacket
         {
             sender.Mod.Logger.Error($"Unhandled packet: {packet.GetType().Name}.");
         }
-
-        sender.Mod.Logger.Info($"Read {reader.BaseStream.Position - prev} bytes for packet of type {packet.GetType().Name}." +
-            $"{reader.BaseStream.Length - reader.BaseStream.Position} left");
     }
 
     #endregion
